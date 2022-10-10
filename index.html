@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body style="box-sizing: border-box">
+    <div id="app">
+      <div
+        style="
+          background-color: #fff;
+          width: 735px;
+          border-radius: 5px;
+          margin: 20px;
+          box-shadow: 0px 0px 10px 1px #dbdbdb;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            padding: 15px 20px 15px 20px;
+          "
+        >
+          <div>
+            <p style="color: #3460dc; font-weight: 600; font-size: 23px">
+              PAGOS
+            </p>
+          </div>
+          <div style="display: flex; align-items: center">
+            <p
+              @click="onSubmit"
+              style="cursor: pointer; color: #3460dc; font-weight: 600"
+              v-if="isShow == true"
+            >
+              Guardar
+            </p>
+            <p
+              @click="add"
+              style="
+                cursor: pointer;
+                color: #3460dc;
+                font-weight: 600;
+                margin-left: 20px;
+              "
+            >
+              Agregar
+            </p>
+            <p
+              @click="showForm"
+              v-if="formulario.length > 0 && isShow == false"
+              style="
+                margin-left: 20px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 600;
+                color: #3460dc;
+              "
+            >
+              Editar
+            </p>
+            <p
+              style="
+                margin-left: 20px;
+                font-size: 23px;
+                font-weight: 400;
+                color: #94a3b8;
+              "
+            >
+              Por cobrar:
+              <span style="font-weight: 600; color: #000"
+                >{{totalCollect}} {{coin}}</span
+              >
+            </p>
+          </div>
+        </div>
+        <div
+          :style="{display: 'flex', width: '100%', height: '210px', overflowX: flagOverflowX}"
+        >
+          <div v-show="isShow">
+            <form id="app" @submit.prevent="onSubmit" method="post">
+              <div
+                v-for="(item, index) in formulario"
+                :key="index"
+                style="display: inline-flex"
+              >
+                <div
+                  style="
+                    background-color: #f2f2f2;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin: 5px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      background-color: lightblue;
+                      border-radius: 50%;
+                      margin-bottom: 10px;
+                    "
+                  ></div>
+
+                  <p>
+                    <input
+                      id="nameObj"
+                      v-model.lazy="formulario[index].nameObj"
+                      type="text"
+                      name="nameObj"
+                      placeholder="Nombre"
+                    />
+                  </p>
+
+                  <p>
+                    <input
+                      id="amount"
+                      v-model.lazy="formulario[index].amount"
+                      type="number"
+                      name="amount"
+                      placeholder="Abono"
+                    />
+                  </p>
+
+                  <p style="display: none">
+                    <label for="percent">percent</label>
+                    <input
+                      id="percent"
+                      v-model.lazy="formulario[index].percent"
+                      type="number"
+                      name="percent"
+                    />
+                  </p>
+
+                  <p style="font-size: 14px">
+                    <span
+                      v-if="formulario[index].stateObj != 'Pagado'"
+                      @click="disminuirPorcentaje(index)"
+                      style="cursor: pointer"
+                    >
+                      -
+                    </span>
+                    {{formulario[index].percent}} %
+
+                    <span
+                      v-if="formulario[index].stateObj != 'Pagado'"
+                      style="cursor: pointer"
+                      @click="aumentarPorcentaje(index)"
+                    >
+                      +
+                    </span>
+                  </p>
+
+                  <p style="width: 100%">
+                    <label style="font-size: 14px" for="dateObj">Vence</label>
+                    <input
+                      id="dateObj"
+                      v-model.lazy="formulario[index].dateObj"
+                      type="date"
+                      name="dateObj"
+                    />
+                  </p>
+
+                  <p style="width: 100%">
+                    <label style="font-size: 14px" for="stateObj">stateObj</label>
+                    <select
+                      id="stateObj"
+                      v-model.lazy="formulario[index].stateObj"
+                      name="stateObj"
+                      placeholder="stateObj"
+                    >
+                      <option>Pagado</option>
+                      <option>Pendiente</option>
+                    </select>
+                  </p>
+                  <p @click="borrar(index)" style="cursor: pointer">Eliminar</p>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div
+            style="align-self: center; align-items: start; width: 735px"
+            v-if="formulario.length==0"
+          >
+            <p style="text-align: center">
+              Presiona el botón Agregar para añadir un pago
+            </p>
+          </div>
+          <div
+            v-if="!isShow"
+            v-for="(info, indice) in formulario"
+            :key="indice"
+            style="
+              margin: 10px;
+              padding: 10px;
+              display: flex;
+              align-items: center;
+              flex-direction: column;
+              min-width: 125px;
+            "
+          >
+            <div
+              style="
+                width: 50px;
+                height: 50px;
+                background-color: lightblue;
+                border-radius: 50%;
+                margin-bottom: 10px;
+              "
+            ></div>
+            <p style="text-align: center; margin: 0; font-size: 20px">
+              {{info.nameObj}}
+            </p>
+            <p style="text-align: center; margin: 5px 0 5px 0; font-size: 14px">
+              {{info.amount}} ({{info.percent}}%)
+            </p>
+            <p
+              :style="{whiteSpace:'nowrap',textAlign: 'center', margin: '0px', fontSize: '14px', color:[info.stateObj == 'Pagado' ? 'green' : 'black']}"
+            >
+              <span v-if="info.stateObj == 'Pagado'">Pagado</span>
+              {{info.dateObj}}
+            </p>
+            <!-- <p style="text-align: center;">{{info.movie}}</p> -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          message: "casa",
+          coin: "UF",
+          totalCollect: 182,
+          debt: 182,
+          flagOverflowX: "hidden",
+          isShow: false,
+          formulario: [],
+        },
+        methods: {
+          showForm: function () {
+            this.isShow = !this.isShow;
+          },
+          onSubmit: function (data) {
+            this.calculaRestante();
+            this.isShow = !this.isShow;
+            localStorage.setItem("formulario", JSON.stringify(this.formulario));
+          },
+          add: function () {
+            this.formulario.push({
+              nameObj: null,
+              amount: null,
+              percent: 0,
+              dateObj: null,
+              stateObj: null,
+            });
+            this.isShow = true;
+            if (this.formulario.length >= 5) {
+              this.flagOverflowX = "scroll";
+            }
+          },
+          borrar: function (index) {
+            this.formulario.splice(index, 1);
+            if (this.formulario.length < 5) {
+              this.flagOverflowX = "hidden";
+            }
+          },
+          calculaRestante: function () {
+            let total = 0;
+            this.formulario.forEach((el) => {
+              total = total + parseFloat(el.amount);
+            });
+            this.totalCollect = this.debt - total;
+          },
+          aumentarPorcentaje: function (indice) {
+            if (this.formulario[indice].percent < 100) {
+              this.formulario[indice].percent =
+                this.formulario[indice].percent + 5;
+
+              if (this.formulario.length > 1) {
+                if (indice == 0 && this.formulario[indice + 1].percent > 0) {
+                  this.formulario[indice + 1].percent =
+                    this.formulario[indice + 1].percent - 5;
+                }
+
+                if (indice > 0 && this.formulario[indice - 1].percent > 0) {
+                  this.formulario[indice - 1].percent =
+                    this.formulario[indice - 1].percent - 5;
+                }
+              }
+            }
+          },
+          disminuirPorcentaje: function (indice) {
+            if (this.formulario[indice].percent > 0) {
+              this.formulario[indice].percent =
+                this.formulario[indice].percent - 5;
+
+              if (this.formulario.length > 1) {
+                if (indice == 0 && this.formulario[indice + 1].percent > 0) {
+                  this.formulario[indice + 1].percent =
+                    this.formulario[indice + 1].percent + 5;
+                }
+                if (indice > 0 && this.formulario[indice - 1].percent > 0) {
+                  this.formulario[indice - 1].percent =
+                    this.formulario[indice - 1].percent + 5;
+                }
+              }
+            }
+          },
+        },
+        mounted() {
+          this.formulario = JSON.parse(localStorage.getItem("formulario"));
+          this.calculaRestante();
+        },
+      });
+    </script>
+    <style>
+      * {
+        padding: 0px;
+        margin: 0px;
+        box-sizing: border-box;
+      }
+    </style>
+  </body>
+</html>
